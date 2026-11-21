@@ -12,6 +12,7 @@ for f in $(ls "$PCAP"/*.pcap 2>/dev/null | sort | head -n -$KEEP); do  # skip th
   docker run --rm --network none --read-only --tmpfs /tmp --tmpfs /opt/cfm/bin/logs --cap-drop ALL \
     --security-opt no-new-privileges --memory 768m -v "$work/in:/in:ro" -v "$work/out:/out" \
     honeypot-cicflowmeter /in /out > /dev/null 2>&1
+  echo "$(basename "$f"): $(cat "$work"/out/*.csv 2>/dev/null | wc -l) flow lines"  # a count only, never addresses
   chmod -R a+rX "$work/out"
   docker compose --profile jobs run --rm -T -v "$work/out:/flows:ro" shadow /flows
   rm -rf "$work"

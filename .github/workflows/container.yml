@@ -66,7 +66,7 @@ jobs:
           sleep 3
           docker compose stop capture                       # flush the capture file
           docker compose --profile jobs build
-          sudo ALL=1 sh shadow/run-hourly.sh
+          sudo env TRACKER_HOST="$TRACKER_HOST" ALL=1 sh shadow/run-hourly.sh   # sudo drops the job's environment
           curl -sf 'localhost:8000/api/shadow?hours=24' | python3 -c "
           import json, sys
           s = json.load(sys.stdin); print(json.dumps(s, indent=1))
