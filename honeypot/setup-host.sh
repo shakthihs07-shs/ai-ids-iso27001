@@ -2,6 +2,7 @@
 # One-time setup of the honeypot VM (Ubuntu 24.04 on Oracle Cloud), run as root from this folder:
 #   sudo bash setup-host.sh firewall      # firewall + move admin SSH to ADMIN_PORT (keep this session open)
 #   sudo bash setup-host.sh start <ip>    # after `ssh -p ADMIN_PORT` works: start honeypot, collector, HTTPS
+#   sudo bash setup-host.sh shadow        # (included in start) shadow mode: capture, flow tool, hourly scoring
 set -euo pipefail
 ADMIN_PORT=22022
 # Fake services (opencanary/opencanary.conf) + 443 for the tracker page. tests/test_honeypot.py keeps them in sync.
@@ -46,7 +47,14 @@ start() {
   # Refresh the country database monthly by rebuilding the collector
   printf '#!/bin/sh\ncd %s && docker compose build collector && docker compose up -d collector\n' "$PWD" > /etc/cron.monthly/honeypot-geo
   chmod +x /etc/cron.monthly/honeypot-geo
+  shadow
   echo "Tracker: https://${ip//./-}.sslip.io/"
+}
+
+shadow() {  # shadow mode (docs/09): capture runs with the stack; flows are made and scored at minute 5 of every hour
+  docker compose up -d --build capture
+  docker compose --profile jobs build
+  printf '5 * * * * root sh %s/shadow/run-hourly.sh >> /var/log/honeypot-shadow.log 2>&1\n' "$PWD" > /etc/cron.d/honeypot-shadow
 }
 
 "$@"

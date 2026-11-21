@@ -142,3 +142,68 @@ def test_firewall_opens_exactly_the_honeypot_ports_and_https():
     admin = int(re.search(r"ADMIN_PORT=(\d+)", setup).group(1))
     assert opened == services | {443}  # 443: the tracker page; everything else is a fake service
     assert admin not in opened and 22 in services  # real SSH moves off 22, which the honeypot takes
+
+
+# ---------------------------------------------------------------- shadow mode
+sys.path.insert(0, str(ROOT / "honeypot" / "shadow"))
+import score  # noqa: E402
+
+MODEL = ROOT / "live" / "model"
+
+
+def honeypot_ports():
+    conf = json.loads((ROOT / "honeypot" / "opencanary" / "opencanary.conf").read_text())
+    return {v for k, v in conf.items() if k.endswith(".port") and conf.get(k[:-5] + ".enabled")}
+
+
+def test_shadow_mode_covers_exactly_the_honeypot_ports():
+    import re
+    capture = (ROOT / "honeypot" / "shadow" / "capture.sh").read_text()
+    captured = {int(p) for p in re.search(r'PORTS="([\d ]+)"', capture).group(1).split()}
+    assert captured == set(score.SERVICES) == honeypot_ports()
+    assert 443 not in captured and 22022 not in captured  # never the tracker's visitors or the admin
+
+
+def flow_csv(path, rows):
+    """A flow file in the fixed CICFlowMeter's layout: identifiers first, then features under the tool's names."""
+    feats = json.loads((MODEL / "card.json").read_text())["features_order"]
+    tool = [{v: k for k, v in score.RENAME.items()}.get(f, f) for f in feats]
+    head = ["Flow ID", "Src IP", "Src Port", "Dst IP", "Dst Port", "Timestamp"] + [t for t in tool if t != "Protocol"] + ["Protocol"]
+    with path.open("w") as f:
+        f.write(",".join(head) + "\n")
+        for dst, port in rows:
+            values = {"Flow ID": "x", "Src IP": "203.0.113.9", "Src Port": "40000", "Dst IP": dst, "Dst Port": str(port),
+                      "Timestamp": "21/11/2026 06:15:02 PM", "Protocol": "6", "Total Fwd Packet": "3", "Total Bwd packets": "2",
+                      "Flow Duration": "1500000"}
+            f.write(",".join(values.get(h, "1") for h in head) + "\n")
+
+
+def test_shadow_scores_inbound_honeypot_flows_and_stores_no_addresses(tmp_path):
+    flows = tmp_path / "flows"
+    flows.mkdir()
+    flow_csv(flows / "x_Flow.csv", [("10.0.0.177", 22), ("10.0.0.177", 443), ("93.184.216.34", 80), ("10.0.0.177", 3389)])
+    db = tmp_path / "t.db"
+    assert score.main(flows, db, MODEL) == 2  # the tracker's 443 and the server's own outbound :80 are not scored
+    con = __import__("sqlite3").connect(db)
+    rows = con.execute("SELECT ts, service, port, packets, duration_s, decision FROM shadow ORDER BY port").fetchall()
+    assert [(r[1], r[2], r[3], r[4]) for r in rows] == [("SSH", 22, 5, 1.5), ("RDP", 3389, 5, 1.5)]
+    assert rows[0][0] == "2026-11-21T18:15:02Z" and {r[5] for r in rows} <= {"ALERT", "REVIEW", "ALLOW"}
+    assert "203.0.113" not in json.dumps(con.execute("SELECT * FROM shadow").fetchall())
+    columns = [r[1] for r in con.execute("PRAGMA table_info(shadow)")]
+    assert not {"src", "src_ip", "dst_ip", "ip"} & set(columns)
+
+
+def test_shadow_refuses_flows_without_the_model_features(tmp_path):
+    (tmp_path / "f.csv").write_text("Dst IP,Dst Port,Timestamp\n10.0.0.1,22,x\n")
+    with pytest.raises(ValueError, match="lacks model features"):
+        score.main(tmp_path, tmp_path / "t.db", MODEL)
+
+
+def test_shadow_api_summarises_decisions(tmp_path):
+    con = c.connect(tmp_path / "t.db")
+    now = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    for service, decision in [("SSH", "REVIEW"), ("SSH", "ALLOW"), ("SSH", "ALERT"), ("RDP", "ALLOW")]:
+        con.execute("INSERT INTO shadow (ts, service, decision) VALUES (?, ?, ?)", (now, service, decision))
+    s = TestClient(c.create_app(con, ingest=False)).get("/api/shadow").json()
+    assert s["flows"] == 4 and s["decisions"] == {"ALERT": 1, "REVIEW": 1, "ALLOW": 2} and s["flagged_share"] == 0.5
+    assert s["by_service"][0] == {"key": "SSH", "ALERT": 1, "REVIEW": 1, "ALLOW": 1, "flows": 3}
