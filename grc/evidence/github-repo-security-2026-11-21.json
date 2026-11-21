@@ -1,0 +1,30 @@
+{
+  "source": "GitHub REST API for shakthihs07-shs/ai-ids-iso27001, 2026-11-21",
+  "visibility": "public",
+  "default_branch": "main",
+  "security_and_analysis": {
+    "secret_scanning": {
+      "status": "enabled"
+    },
+    "secret_scanning_push_protection": {
+      "status": "enabled"
+    },
+    "dependabot_security_updates": {
+      "status": "enabled"
+    },
+    "secret_scanning_non_provider_patterns": {
+      "status": "disabled"
+    },
+    "secret_scanning_validity_checks": {
+      "status": "disabled"
+    }
+  },
+  "dependabot_alerts": true,
+  "dependabot_security_updates": {
+    "enabled": true,
+    "paused": false
+  },
+  "private_vulnerability_reporting": {
+    "enabled": true
+  }
+}
