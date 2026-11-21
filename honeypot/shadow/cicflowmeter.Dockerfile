@@ -7,9 +7,10 @@ RUN apk add --no-cache git openjdk8 libpcap-dev unzip
 ARG COMMIT=4dd5319ad36457010d7a406505790b17a5828108
 RUN git clone --quiet https://github.com/GintsEngelen/CICFlowMeter /src && git -C /src checkout --quiet "$COMMIT"
 WORKDIR /src
-# The zip Gradle just built trips unzip's zip-bomb check (overlapping entries); the authors' Dockerfile disables it
+# The zip Gradle just built holds some files twice, which trips unzip's zip-bomb check and its replace prompt;
+# the authors' Dockerfile also disables the check and overwrites (-o)
 RUN ./gradlew --no-daemon --quiet distZip \
-    && UNZIP_DISABLE_ZIPBOMB_DETECTION=TRUE unzip -q build/distributions/CICFlowMeter-*.zip -d /dist \
+    && UNZIP_DISABLE_ZIPBOMB_DETECTION=TRUE unzip -o -q build/distributions/CICFlowMeter-*.zip -d /dist \
     && mv /dist/CICFlowMeter-* /dist/cfm
 
 FROM alpine:3.20
