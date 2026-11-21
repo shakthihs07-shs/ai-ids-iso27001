@@ -41,6 +41,8 @@ jobs:
     env: {TRACKER_HOST: ci.invalid}  # Caddy is not started here; compose needs the variable to parse
     steps:
       - uses: actions/checkout@v7
+      - name: Free port 22 for the fake SSH (the runner runs its own sshd there)
+        run: sudo systemctl stop ssh.socket ssh || true
       - run: docker compose up -d --build opencanary collector
       - name: Fake services answer and their events reach the collector
         run: |
