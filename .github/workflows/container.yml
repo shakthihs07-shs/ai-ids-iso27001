@@ -1,0 +1,31 @@
+name: Container
+
+on:
+  push:
+    branches: [main]
+    paths: [app/**, src/**, Dockerfile, requirements.txt, data/download_cicids2017.sh, deploy/**, .github/workflows/container.yml]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: true
+
+jobs:
+  image:
+    name: Build and smoke-test the image
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build (downloads CIC-IDS2017, trains the detector)
+        run: docker build -t live-ids .
+      - name: Run the container and check every endpoint
+        run: |
+          docker run -d -p 7860:7860 --name ids live-ids
+          for i in $(seq 1 60); do curl -sf localhost:7860/api/health && break; sleep 2; done
+          curl -sf localhost:7860/ | grep -q "Live IDS console"
+          pip install -q websockets
+          python3 deploy/smoke_test.py http://localhost:7860
+      - name: Container logs
+        if: always()
+        run: docker logs ids 2>&1 | tail -40

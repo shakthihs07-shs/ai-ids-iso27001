@@ -1,0 +1,9 @@
+.git
+.venv
+**/__pycache__
+data/cicids2017
+data/*.txt
+app/artifacts
+results
+docs
+tests

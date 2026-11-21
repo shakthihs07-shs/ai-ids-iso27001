@@ -1,0 +1,44 @@
+# Honeypot + collector + HTTPS front. All three use the host network so OpenCanary sees real source
+# addresses; the host firewall (setup-host.sh) decides which ports the internet can reach.
+services:
+  opencanary:
+    build: ./opencanary
+    network_mode: host
+    restart: unless-stopped
+    cap_drop: [ALL]
+    # Bind ports below 1024 and open the log in nobody's folder as root, then drop to nobody (which clears all capabilities)
+    cap_add: [NET_BIND_SERVICE, SETUID, SETGID, DAC_OVERRIDE]
+    security_opt: ["no-new-privileges:true"]
+    read_only: true
+    tmpfs: [/tmp, /var/tmp]   # the fake SSH writes its host key to /var/tmp
+    volumes: ["canary-logs:/var/log/opencanary"]
+    mem_limit: 512m
+    pids_limit: 256
+
+  collector:
+    build: ./collector
+    network_mode: host
+    restart: unless-stopped
+    environment: ["RETENTION_DAYS=30"]
+    volumes: ["canary-logs:/var/log/opencanary:ro", "tracker-data:/data"]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    read_only: true
+    tmpfs: [/tmp]
+    mem_limit: 512m
+
+  caddy:
+    image: caddy:2.8.4
+    network_mode: host
+    restart: unless-stopped
+    environment: ["TRACKER_HOST=${TRACKER_HOST:?set TRACKER_HOST in .env}"]
+    volumes: ["./Caddyfile:/etc/caddy/Caddyfile:ro", "./site:/srv/site:ro", "caddy-data:/data", "caddy-config:/config"]
+    cap_drop: [ALL]
+    cap_add: [NET_BIND_SERVICE]
+    security_opt: ["no-new-privileges:true"]
+
+volumes:
+  canary-logs: {}
+  tracker-data: {}
+  caddy-data: {}
+  caddy-config: {}

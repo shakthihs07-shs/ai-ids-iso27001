@@ -1,0 +1,26 @@
+# Checks the public demo every 30 minutes. A failed run makes GitHub email the repository owner.
+# GitHub pauses scheduled workflows after 60 days without commits to the repository: re-enable it under Actions.
+name: Uptime
+on:
+  schedule: [{cron: "*/30 * * * *"}]
+  workflow_dispatch:
+permissions: {}
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Demo pages answer
+        run: |
+          for u in https://shakthihs07-shs.github.io/ids-demo/ https://shakthihs07-shs.github.io/ids-demo/live/ \
+                   https://shakthihs07-shs.github.io/ids-demo/tracker/; do
+            curl -fsS -o /dev/null --retry 3 --retry-delay 20 --retry-all-errors "$u" && echo "ok $u"
+          done
+      - name: Honeypot is still logging attacks
+        run: |
+          stats=$(curl -fsS --retry 3 --retry-delay 20 --retry-all-errors "https://152-70-6-78.sslip.io/api/stats?hours=24")
+          last=$(jq -r .last_event <<< "$stats")
+          age=$(( $(date +%s) - $(date -d "$last" +%s) ))
+          echo "last attack $last, $((age / 60)) min ago"
+          # Real attacks arrive every few minutes, so 3 quiet hours means the honeypot or the collector stopped
+          [ "$age" -lt 10800 ] || { echo "::error::no attack logged for 3 hours"; exit 1; }

@@ -1,0 +1,7 @@
+data/*.txt
+results/models.joblib
+__pycache__/
+*.pyc
+.venv/
+data/cicids2017/
+app/artifacts/

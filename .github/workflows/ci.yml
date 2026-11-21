@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      reproduce:
+        description: "Also download NSL-KDD and rerun the full pipeline"
+        type: boolean
+        default: false
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements-dev.txt
+      - run: pytest -v
+
+  reproduce:
+    if: github.event_name == 'workflow_dispatch' && inputs.reproduce
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements-dev.txt
+      - run: bash data/download.sh
+      - name: Run pipeline
+        working-directory: src
+        run: |
+          python train_evaluate.py
+          python guardrails.py
+          python mitre_mapping.py
+          python build_risk_register.py
+      - run: pytest -v
+      - uses: actions/upload-artifact@v4
+        with:
+          name: results
+          path: results/

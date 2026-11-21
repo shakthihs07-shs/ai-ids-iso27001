@@ -1,0 +1,47 @@
+{
+  "source": "CICIDS2017_improved.zip, https://intrusion-detection.distrinet-research.be/CNS2022/",
+  "features": 82,
+  "train_rows": 833240,
+  "test_rows": 1266736,
+  "train_attack_share": 0.15002280255388603,
+  "test_attack_share": 0.3003198772277728,
+  "unseen_attack_types": [
+    "Botnet",
+    "DDoS",
+    "Infiltration",
+    "Infiltration - Portscan",
+    "Portscan",
+    "Web Attack - Brute Force",
+    "Web Attack - SQL Injection",
+    "Web Attack - XSS"
+  ],
+  "unseen_attack_rows": 326853,
+  "train_label_counts": {
+    "BENIGN": 708235,
+    "DoS Hulk": 110928,
+    "DoS GoldenEye": 5297,
+    "FTP-Patator": 2780,
+    "DoS Slowloris": 2701,
+    "SSH-Patator": 2073,
+    "DoS Slowhttptest": 1218,
+    "Heartbleed": 8
+  },
+  "test_label_counts": {
+    "BENIGN": 886310,
+    "Portscan": 159066,
+    "DDoS": 95144,
+    "Infiltration - Portscan": 71767,
+    "DoS Hulk": 47540,
+    "DoS GoldenEye": 2270,
+    "FTP-Patator": 1192,
+    "DoS Slowloris": 1158,
+    "SSH-Patator": 888,
+    "Botnet": 736,
+    "DoS Slowhttptest": 522,
+    "Web Attack - Brute Force": 73,
+    "Infiltration": 36,
+    "Web Attack - XSS": 18,
+    "Web Attack - SQL Injection": 13,
+    "Heartbleed": 3
+  }
+}

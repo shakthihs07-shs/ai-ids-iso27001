@@ -1,0 +1,44 @@
+{
+  "human_in_loop": {
+    "auto_block_share": 0.3727377572746629,
+    "analyst_review_share": 0.06440738112136267,
+    "auto_allow_share": 0.5628548616039745,
+    "auto_block_precision": 0.9682256337022492,
+    "review_queue_attack_share": 0.678374655647383,
+    "attacks_missed_by_auto_allow": 3712,
+    "attacks_total": 12833
+  },
+  "drift": {
+    "features_major_shift": 0,
+    "features_moderate_shift": 5,
+    "top_shifted": [
+      [
+        "dst_host_diff_srv_rate",
+        0.117
+      ],
+      [
+        "src_bytes",
+        0.115
+      ],
+      [
+        "dst_host_srv_count",
+        0.111
+      ],
+      [
+        "dst_host_same_srv_rate",
+        0.105
+      ],
+      [
+        "srv_count",
+        0.103
+      ]
+    ],
+    "service_mix_largest_changes": {
+      "http": 0.122,
+      "private": 0.073,
+      "domain_u": 0.042,
+      "ftp_data": 0.041,
+      "smtp": 0.041
+    }
+  }
+}

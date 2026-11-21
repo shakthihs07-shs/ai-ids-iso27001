@@ -1,0 +1,36 @@
+# HTTPS for the tracker page and its API. Port 80 belongs to the honeypot's fake web login,
+# so certificates come through the TLS-ALPN challenge on 443 and plain HTTP stays off.
+{
+	http_port 8081
+	auto_https disable_redirects
+	admin off
+}
+
+{$TRACKER_HOST} {
+	tls {
+		issuer acme {
+			disable_http_challenge
+		}
+	}
+	handle /api/* {
+		# The public copy of the tracker page on GitHub Pages reads this API (read-only, no cookies)
+		header Access-Control-Allow-Origin "https://shakthihs07-shs.github.io"
+		reverse_proxy 127.0.0.1:8000 {
+			flush_interval -1
+		}
+	}
+	handle {
+		# Static files only: gzip buffers output, which would hold back the live event stream
+		encode gzip
+		root * /srv/site
+		file_server
+	}
+	header {
+		# The page shows attacker-supplied text: scripts only from this site, nothing inline
+		Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'"
+		X-Content-Type-Options nosniff
+		Referrer-Policy no-referrer
+		Strict-Transport-Security "max-age=31536000"
+		-Server
+	}
+}
