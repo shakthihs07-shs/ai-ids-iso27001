@@ -38,11 +38,13 @@ a foothold, never publish data that identifies a person, and stay honest about w
 - Administration only by SSH key on a separate port; no passwords anywhere (A.5.15, A.8.5).
 - Everything an attacker sends is hostile input: cleaned, capped, escaped, never executed (A.8.26, A.8.28).
 - Personal data is minimised before it is stored and deleted on a fixed schedule (A.5.34, A.8.10, A.8.11).
-- Every change goes through git and CI; configuration lives in the repository (A.8.9, A.8.32).
+- Every change reaches `main` through a pull request that must pass CI, enforced by a branch ruleset;
+  configuration lives in the repository (A.8.9, A.8.32).
 - Incidents are recorded with a cause and a lesson, and a regression test where possible (A.5.26, A.5.27).
 
 **Roles (A.5.2).** One person, Shakthi H S, is owner, administrator, incident handler and data controller.
-Segregation of duties is therefore not possible (A.5.3 not applicable); CI tests are the compensating control.
+Segregation of duties is therefore not possible (A.5.3 not applicable). The compensating control: a branch
+ruleset lets a change reach `main` only through a pull request that passes CI.
 
 **Review (A.5.4, A.5.36).** Quarterly: re-collect the VM evidence (section 10), review the gaps in section 5,
 review access, update this pack. After every incident: update section 6.
@@ -235,7 +237,9 @@ handling, supply-chain security, vulnerability handling, cryptography and access
 | [`tests/test_soa.py`](../tests/test_soa.py) | Every evidence file named in the SoA exists; the summary above matches the SoA |
 | [`.github/workflows/uptime.yml`](../.github/workflows/uptime.yml) | Monitoring every 30 minutes, with e-mail on failure |
 | [`tests/test_honeypot.py`](../tests/test_honeypot.py) | Privacy, hostile input, retention and firewall rules are tested on every push |
-| GitHub repository settings | Secret scanning, push protection, Dependabot alerts and security updates, private vulnerability reporting: all on |
+| [`grc/evidence/github-ruleset-protect-main.json`](../grc/evidence/github-ruleset-protect-main.json) | `main` cannot be deleted or force-pushed; changes need a pull request that passes the CI `test` check |
+| [`grc/evidence/github-repo-security-2026-11-21.json`](../grc/evidence/github-repo-security-2026-11-21.json) | Secret scanning, push protection, Dependabot alerts and security updates, private vulnerability reporting: all on |
+| [`.github/workflows/container.yml`](../.github/workflows/container.yml) | Every update is built and smoke-tested before it merges, the honeypot images included |
 
 **Refresh (quarterly and after changes):** copy `grc/collect_evidence.sh` to the VM, run
 `sudo bash collect_evidence.sh > vm-$(date -u +%F).txt`, commit the output under `grc/evidence/`, and point
