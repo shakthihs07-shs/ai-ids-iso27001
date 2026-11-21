@@ -48,7 +48,7 @@ services:
     environment: ["IFACE=${CAPTURE_IFACE:-}"]  # empty: the internet-facing interface; CI uses lo
     restart: unless-stopped
     cap_drop: [ALL]
-    cap_add: [NET_RAW, NET_ADMIN]
+    cap_add: [NET_RAW, NET_ADMIN, SETUID, SETGID]   # open the interface, then drop to the tcpdump user
     security_opt: ["no-new-privileges:true"]
     read_only: true
     volumes: ["shadow-pcap:/pcap"]

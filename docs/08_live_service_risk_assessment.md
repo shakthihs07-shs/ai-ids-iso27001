@@ -37,10 +37,13 @@ supplier register (06 §4) and the audit findings.
 | LR10 | API overloaded | Tracker API | 6 Medium | 8.6 limits, 8.21 | 4 Low | Accept |
 | LR11 | Legal or licence non-compliance | Honeypot data, datasets | 8 Medium | 5.31 GDPR record, 5.32 licences, 5.34 | 4 Low | Accept |
 | LR12 | Code or evidence lost | Repository, evidence | 6 Medium | 8.13 copies, 8.32 deletion blocked, 5.33 | 3 Low | Accept |
+| LR13 | Flow tool exploited by crafted packets (shadow mode, [09](09_shadow_mode.md)) | Honeypot VM | **12 High** | 8.22 no network, 8.27 read-only and no capabilities, 8.19 pinned build | 4 Low | Accept |
 
 Full threat descriptions and every linked control: [`grc/risk_register_live.csv`](../grc/risk_register_live.csv).
 
-**Profile:** before treatment 6 High and 6 Medium; after treatment 1 High, 6 Medium and 5 Low. No risk is Critical.
+**Profile:** before treatment 7 High and 6 Medium; after treatment 1 High, 6 Medium and 6 Low. No risk is Critical.
+LR13 was added with shadow mode on 2026-11-21: the flow tool bundles a Log4Shell-era log4j and a native packet
+parser and reads attacker-controlled packets, so it runs without network, read-only and without capabilities.
 
 ## 3. Treatment and acceptance
 
@@ -49,7 +52,7 @@ already lower the likelihood, but the laptop that holds the key does not meet th
 7.9; details kept private). Treatment: bring the laptop to a supported, patched operating system and resolve disk
 encryption. Due 2026-12-31. Expected residual afterwards: likelihood 1, score 5 Medium.
 
-**Accepted (residual ≤ 9):** LR01, LR03 to LR12, signed off by the risk owner on 2026-11-21. Improvements already
+**Accepted (residual ≤ 9):** LR01, LR03 to LR13, signed off by the risk owner on 2026-11-21. Improvements already
 planned still lower some of them further: Oracle two-factor authentication (LR03), confirmed scheduled monitoring,
 Pay As You Go and a rebuild drill (LR06), and a custom domain (LR08).
 

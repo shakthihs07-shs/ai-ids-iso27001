@@ -10,4 +10,4 @@ LOCAL=$(ip -o -4 addr show dev "$IFACE" | sed -n 's/.* inet \([0-9.]*\).*/\1/p' 
 ports() { for p in $PORTS; do printf '%s port %s or ' "$1" "$p"; done | sed 's/ or $//'; }
 FILTER="tcp and ((dst host $LOCAL and ($(ports dst))) or (src host $LOCAL and ($(ports src))))"
 echo "capturing on $IFACE: $FILTER"
-exec tcpdump -i "$IFACE" -nn -s 0 -Z root -G 3600 -w '/pcap/%Y%m%d-%H%M.pcap' "$FILTER"
+exec tcpdump -i "$IFACE" -nn -s 0 -Z tcpdump -G 3600 -w '/pcap/%Y%m%d-%H%M.pcap' "$FILTER"
