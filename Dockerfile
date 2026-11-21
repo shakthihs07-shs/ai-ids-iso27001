@@ -1,7 +1,7 @@
 # Live IDS console: FastAPI service + live dashboard (Hugging Face Spaces, Docker SDK, port 7860).
 # The image downloads CIC-IDS2017 and trains the detector at build time, so the dataset is
 # never redistributed; the raw data is deleted in the same layer.
-FROM python:3.12-slim
+FROM python:3.15-slim
 
 RUN apt-get update && apt-get install -y --no-install-recommends curl unzip && rm -rf /var/lib/apt/lists/*
 RUN useradd -m -u 1000 user

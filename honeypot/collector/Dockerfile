@@ -1,4 +1,4 @@
-FROM python:3.12-slim
+FROM python:3.15-slim
 RUN pip install --no-cache-dir fastapi==0.165.0 uvicorn==0.54.0
 WORKDIR /app
 COPY fetch_geo.py collector.py ./

@@ -3,11 +3,14 @@ name: Container
 on:
   push:
     branches: [main]
-    paths: [app/**, src/**, Dockerfile, requirements.txt, data/download_cicids2017.sh, deploy/**, .github/workflows/container.yml]
+    paths: &paths [app/**, src/**, Dockerfile, requirements.txt, data/download_cicids2017.sh, deploy/**, honeypot/**,
+                   .github/workflows/container.yml]
+  pull_request:
+    paths: *paths
   workflow_dispatch:
 
 concurrency:
-  group: deploy
+  group: container-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -16,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Build (downloads CIC-IDS2017, trains the detector)
         run: docker build -t live-ids .
       - name: Run the container and check every endpoint
@@ -29,3 +32,33 @@ jobs:
       - name: Container logs
         if: always()
         run: docker logs ids 2>&1 | tail -40
+
+  honeypot:
+    name: Build and smoke-test the honeypot
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults: {run: {working-directory: honeypot}}
+    env: {TRACKER_HOST: ci.invalid}  # Caddy is not started here; compose needs the variable to parse
+    steps:
+      - uses: actions/checkout@v7
+      - name: Free port 22 for the fake SSH (the runner runs its own sshd there)
+        run: sudo systemctl stop ssh.socket ssh || true
+      - run: docker compose up -d --build opencanary collector
+      - name: Fake services answer and their events reach the collector
+        run: |
+          for i in $(seq 1 30); do curl -sf localhost:8000/api/health && break; sleep 2; done
+          curl -sf localhost:8000/api/health
+          for port in 21 23 3306 6379; do
+            timeout 5 bash -c "</dev/tcp/127.0.0.1/$port"
+            echo "port $port answers"
+          done
+          curl -s -o /dev/null localhost/          # the fake web login
+          curl -s -o /dev/null localhost/.env      # a probed path: logged only because of opencanary/log404.tac
+          sleep 3
+          docker compose exec -T collector python -c "
+          log = open('/var/log/opencanary/opencanary.log').read()
+          assert '\"PATH\": \"/.env\"' in log, 'probed path not logged'
+          print('web requests logged and readable by the collector')"
+      - name: Honeypot logs
+        if: always()
+        run: docker compose logs --tail 40
