@@ -69,8 +69,9 @@ Classes (A.5.12): **Public** (meant to be published), **Internal** (not publishe
 | Demo pages and ONNX models | GitHub Pages | Public | Operator | |
 | Tracker statistics and masked events | VM (SQLite), API | Public | Operator | Masked before storage, 30 days |
 | Raw honeypot log | VM, root-only volume | Confidential | Operator | Full source addresses and attempted passwords; 7 days |
-| Admin SSH key | Operator's laptop | Confidential | Operator | Gap: no passphrase (A.5.17) |
-| GitHub and Oracle accounts | Providers | Confidential | Operator | Gap: confirm 2FA (A.8.5) |
+| Admin SSH key | Operator's laptop | Confidential | Operator | Passphrase-protected, held in the ssh-agent (A.5.17) |
+| GitHub and Oracle accounts | Providers | Confidential | Operator | GitHub: 2FA on. Oracle: gap, confirm 2FA (A.8.5) |
+| Operator's laptop | Operator | Confidential | Operator | Only admin endpoint; checked with `grc/check_endpoint.ps1`, results kept privately (A.8.1) |
 | Honeypot VM | Oracle Cloud, Frankfurt | Internal | Operator | Always Free E2.1.Micro |
 | Evidence snapshots | This repository | Public | Operator | No secrets by design |
 
@@ -82,7 +83,7 @@ re-identify sources, and raw logs are never shared.
 | Supplier | Provides | Risk it brings | Handling |
 |---|---|---|---|
 | Oracle Cloud | The VM, network, data centre | Idle Always Free VMs can be reclaimed; account in Free Trial | Uptime check alerts; gap: upgrade to Pay As You Go (A.5.23) |
-| GitHub | Code hosting, CI, Pages, secret scanning | Account takeover would expose the demo | Gap: confirm 2FA (A.8.5) |
+| GitHub | Code hosting, CI, Pages, secret scanning | Account takeover would expose the demo | Two-factor authentication with an authenticator app (A.8.5) |
 | Let's Encrypt | TLS certificate | Renewal failure breaks the API | Caddy renews automatically; certificate dates in the evidence snapshot |
 | sslip.io | DNS name for the VM | LinkedIn flags the whole domain as possibly malicious (INC-07) | Public links point to GitHub Pages only; a custom domain is planned |
 | DB-IP | IP-to-country database (CC BY 4.0) | Download blocked (INC-01) | Fetched at build time with a fallback month; credited on the page |
@@ -98,24 +99,27 @@ Full SoA with justification, evidence and gaps for every control: [`grc/soa.csv`
 
 | Theme | Implemented | Inherited | Partial | Planned | Not applicable | Total |
 |---|---|---|---|---|---|---|
-| 5 Organizational | 28 | 0 | 5 | 2 | 2 | 37 |
+| 5 Organizational | 29 | 0 | 4 | 2 | 2 | 37 |
 | 6 People | 3 | 0 | 0 | 0 | 5 | 8 |
-| 7 Physical | 0 | 10 | 0 | 2 | 2 | 14 |
-| 8 Technological | 24 | 0 | 7 | 1 | 2 | 34 |
-| **All** | **55** | **10** | **12** | **5** | **11** | **93** |
+| 7 Physical | 1 | 10 | 0 | 1 | 2 | 14 |
+| 8 Technological | 24 | 0 | 8 | 0 | 2 | 34 |
+| **All** | **57** | **10** | **12** | **3** | **11** | **93** |
 
 **Treatment plan: open gaps**
 
 | Priority | Control | Action | Due |
 |---|---|---|---|
-| 1 | 5.17, 8.1 | Add a passphrase to the admin SSH key | Now |
-| 1 | 8.5 | Confirm two-factor authentication on GitHub and Oracle | Now |
+| 1 | 8.5 | Confirm two-factor authentication on Oracle | Now |
 | 1 | 5.23 | Upgrade Oracle to Pay As You Go (stops idle reclamation); set a 1 EUR budget alert | Now |
-| 2 | 7.7, 7.9, 8.1 | Confirm disk encryption, screen lock and automatic updates on the laptop, and record them | 1 month |
+| 1 | 8.1 | Bring the laptop to a supported, fully patched operating system (tracked privately) | Now |
+| 2 | 7.9 | Enable disk encryption on the laptop, or record a risk acceptance | 1 month |
 | 2 | 5.20 | Record which data processing agreement applies to each provider account | 1 month |
 | 3 | 5.30 | Rebuild drill: recreate the VM from the repository and time it (target 1 hour) | Yearly |
 | 3 | 5.35 | Independent review of this pack by a qualified peer | Yearly |
 | 3 | 5.6 | Share honeypot indicators with a community feed such as AbuseIPDB | Optional |
+
+**Closed on 2026-11-21:** admin key passphrase and agent (5.17), GitHub two-factor authentication (8.5,
+GitHub part), laptop screen lock (7.7).
 
 **Accepted risks** (documented in the SoA, reviewed quarterly): no labels on individual files (5.13), no
 malware scanner while no files are stored (8.7), no leakage monitoring on the VM (8.12), no backup of the

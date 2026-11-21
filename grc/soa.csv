@@ -15,7 +15,7 @@ Control,Title,Applicable,Status,How it is met / justification,Evidence (reposito
 5.14,Information transfer,Yes,Implemented,All transfer is encrypted: HTTPS for the API and pages; SSH for administration; the API is read-only and cross-origin access is limited to the demo site,honeypot/Caddyfile; honeypot/setup-host.sh,
 5.15,Access control,Yes,Implemented,Administration only by SSH key on a separate port; the public API exposes only read-only; masked data; no write endpoints,honeypot/setup-host.sh; honeypot/collector/collector.py; grc/evidence/vm-2026-11-21.txt,
 5.16,Identity management,Yes,Implemented,One named admin account on the VM (key-based); root login disabled; one GitHub account owns the repositories,grc/evidence/vm-2026-11-21.txt,
-5.17,Authentication information,Yes,Partial,SSH passwords disabled; admin key is ed25519,grc/evidence/vm-2026-11-21.txt,The admin private key has no passphrase: add one
+5.17,Authentication information,Yes,Implemented,SSH passwords disabled; the admin key is ed25519; protected by a passphrase and loaded through the operating system's ssh-agent (checked with the endpoint script; results kept privately),grc/evidence/vm-2026-11-21.txt; grc/check_endpoint.ps1,
 5.18,Access rights,Yes,Implemented,Only the operator has access to the VM and repositories; access reviewed quarterly with the evidence snapshot,grc/evidence/vm-2026-11-21.txt,
 5.19,Information security in supplier relationships,Yes,Implemented,Supplier register with the risk each supplier brings and how it is handled,docs/06_grc_evidence_pack.md,
 5.20,Addressing information security within supplier agreements,Yes,Partial,Standard terms of Oracle Cloud and GitHub apply; both offer data processing agreements,docs/06_grc_evidence_pack.md,Record which DPA version applies to each account
@@ -50,19 +50,19 @@ Control,Title,Applicable,Status,How it is met / justification,Evidence (reposito
 7.4,Physical security monitoring,Yes,Inherited,Provider data centre controls,docs/06_grc_evidence_pack.md,
 7.5,Protecting against physical and environmental threats,Yes,Inherited,Provider data centre controls,docs/06_grc_evidence_pack.md,
 7.6,Working in secure areas,Yes,Inherited,Provider data centre controls,docs/06_grc_evidence_pack.md,
-7.7,Clear desk and clear screen,Yes,Planned,Applies to the operator's laptop,,Confirm automatic screen lock on the operator's laptop and record it
+7.7,Clear desk and clear screen,Yes,Implemented,The operator's laptop requires sign-in on wake and locks after 20 minutes plugged in and 5 on battery (checked with the endpoint script; results kept privately),grc/check_endpoint.ps1,
 7.8,Equipment siting and protection,Yes,Inherited,Provider data centre controls,docs/06_grc_evidence_pack.md,
-7.9,Security of assets off-premises,Yes,Planned,The operator's laptop holds the admin key,,Confirm disk encryption on the operator's laptop and record it
+7.9,Security of assets off-premises,Yes,Planned,The operator's laptop holds the admin key,,Resolve disk encryption on the operator's laptop: enable it or record a risk acceptance (the admin key is already passphrase-protected)
 7.10,Storage media,No,Not applicable,No removable media are used for the service,,
 7.11,Supporting utilities,Yes,Inherited,Provider data centre controls,docs/06_grc_evidence_pack.md,
 7.12,Cabling security,Yes,Inherited,Provider data centre controls,docs/06_grc_evidence_pack.md,
 7.13,Equipment maintenance,Yes,Inherited,Provider data centre controls,docs/06_grc_evidence_pack.md,
 7.14,Secure disposal or re-use of equipment,Yes,Inherited,Cloud storage is sanitised by the provider when released,docs/06_grc_evidence_pack.md,
-8.1,User endpoint devices,Yes,Planned,The operator's laptop is the only endpoint with admin access,,Confirm disk encryption; screen lock and automatic updates; add a passphrase to the SSH key
+8.1,User endpoint devices,Yes,Partial,The operator's laptop is the only endpoint with admin access; screen lock and a passphrase-protected admin key are in place and checked with the endpoint script (results kept privately),grc/check_endpoint.ps1,Open items tracked privately: operating-system patch level and disk encryption (see 7.9)
 8.2,Privileged access rights,Yes,Implemented,Root login disabled; sudo only for the key-authenticated admin; containers drop all Linux capabilities and add back only what each needs,grc/evidence/vm-2026-11-21.txt; honeypot/docker-compose.yml,
 8.3,Information access restriction,Yes,Implemented,The API returns only masked fields and never the address hash; raw logs are readable by root only,honeypot/collector/collector.py; tests/test_honeypot.py,
 8.4,Access to source code,Yes,Implemented,Public read access by design; only the operator can write; main cannot be deleted or force-pushed; GitHub secret scanning and push protection are on,SECURITY.md; grc/evidence/github-ruleset-protect-main.json; grc/evidence/github-repo-security-2026-11-21.json,
-8.5,Secure authentication,Yes,Partial,SSH: key only; passwords and keyboard-interactive login disabled,grc/evidence/vm-2026-11-21.txt,Confirm two-factor authentication on the GitHub and Oracle accounts
+8.5,Secure authentication,Yes,Partial,SSH: key only; passwords and keyboard-interactive login disabled. GitHub account: two-factor authentication with an authenticator app and recovery options (verified 2026-11-21),grc/evidence/vm-2026-11-21.txt,Confirm two-factor authentication on the Oracle account
 8.6,Capacity management,Yes,Implemented,Memory limits per container; swap on the 1 GB VM; limits on API batch size; page size and live viewers,honeypot/docker-compose.yml; honeypot/setup-host.sh; app/main.py; honeypot/collector/collector.py,
 8.7,Protection against malware,Yes,Partial,Low-interaction honeypot: attackers get no shell and uploads are never executed; containers are read-only,honeypot/docker-compose.yml; honeypot/opencanary/opencanary.conf,No malware scanner on the VM: accepted while no files are stored
 8.8,Management of technical vulnerabilities,Yes,Implemented,Automatic security updates on the VM; Dependabot alerts; security updates and monthly grouped updates; every update is built and smoke-tested (including the honeypot images) before it merges; pinned container images,honeypot/setup-host.sh; .github/dependabot.yml; .github/workflows/container.yml; grc/evidence/github-repo-security-2026-11-21.json; grc/evidence/vm-2026-11-21.txt,
