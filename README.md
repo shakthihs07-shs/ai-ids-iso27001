@@ -4,7 +4,8 @@
 
 **[Live IDS console](https://shakthihs07-shs.github.io/ids-demo/live/)**: watch the detector score network flows in real time, in your browser.<br>
 **[Live attack tracker](https://shakthihs07-shs.github.io/ids-demo/tracker/)**: real attacks on an internet-facing honeypot, as they happen, mapped to MITRE ATT&CK ([`honeypot/`](honeypot/README.md)).<br>
-**[Results dashboard](https://shakthihs07-shs.github.io/ids-demo/)**: results for both datasets, MITRE coverage and the risk register on one page, read straight from `results/`.
+**[Results dashboard](https://shakthihs07-shs.github.io/ids-demo/)**: results for both datasets, MITRE coverage and the risk register on one page, read straight from `results/`.<br>
+**[GRC evidence pack](docs/06_grc_evidence_pack.md)**: ISO/IEC 27001:2022 Statement of Applicability for the live service (all 93 Annex A controls, each with evidence), incident register, GDPR record of processing, EU AI Act classification and model card.
 
 An end-to-end security project: I **built and tested a machine-learning network intrusion detection system** on NSL-KDD, **mapped its detection coverage to MITRE ATT&CK**, **tested AI guardrails** (unknown attacks, drift, evasion, alert thresholds), and wrote an **ISO/IEC 27001:2022 risk assessment and risk register** for deploying it in a SOC. It runs as a **real-time detection service** with a [live SOC console](https://shakthihs07-shs.github.io/ids-demo/live/) (below). The core tests are **repeated on CIC-IDS2017** (labels corrected in 2023) to check that the findings hold on modern traffic.
 
@@ -83,7 +84,13 @@ docs/
                                   India vs EU/Germany (NIS2, GDPR, BetrVG, EU AI Act) mapping
   04_findings_report.md           Full results, findings and recommendations
   05_ai_guardrails.md             Hybrid detection, thresholds, human-in-the-loop, drift, evasion
+  06_grc_evidence_pack.md         The live service: policy, assets, suppliers, SoA summary, incident
+                                  playbook and register, GDPR record, EU AI Act, model card
 risk_register.xlsx / .csv         14 risks with evidence, owners, Annex A controls, residual risk
+grc/                              soa.csv / soa.xlsx (93 Annex A controls), collect_evidence.sh (read-only
+                                  VM evidence script), evidence/ (dated snapshots from the VM)
+honeypot/                         The live honeypot, collector, tracker page and VM setup
+SECURITY.md                       How to report a vulnerability
 src/
   common.py                       Data loading, preprocessing, attack categories
   train_evaluate.py               4 models + ensemble, metrics, CV, per-family recall, plots
@@ -91,15 +98,18 @@ src/
   mitre_mapping.py                ATT&CK mapping and per-technique detection
   cicids2017.py                   Same models and anomaly layer on CIC-IDS2017
   build_risk_register.py          Generates the risk register
+  build_soa.py                    Builds grc/soa.xlsx from grc/soa.csv
 app/                              Real-time service: detector.py (hybrid detector, decision bands),
                                   train.py (builds it from CIC-IDS2017), main.py (FastAPI + WebSocket),
                                   static/ (live SOC console, browser engine), export_web.py (ONNX export)
 live/                             The in-browser console as published: ONNX models, replay flows
 Dockerfile, deploy/               Container image and its smoke test
 results/                          All metrics (CSV/JSON) and figures; results/cicids2017/ for the second dataset
-tests/                            pytest: preprocessing, PSI/FPR, risk-register consistency, live service API and stream
+tests/                            pytest: preprocessing, PSI/FPR, risk-register consistency, live service API and stream,
+                                  honeypot privacy and hostile input, SoA completeness and evidence
 .github/workflows/ci.yml          Runs the tests on every push; manual run can reproduce all results
 .github/workflows/container.yml   Builds the Docker image and smoke-tests the running container
+.github/workflows/uptime.yml      Checks the demo and the honeypot every 30 minutes, e-mails on failure
 ```
 
 ## Reproduce

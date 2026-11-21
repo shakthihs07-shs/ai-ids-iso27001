@@ -1,0 +1,94 @@
+Control,Title,Applicable,Status,How it is met / justification,Evidence (repository files),Gap / action
+5.1,Policies for information security,Yes,Implemented,Security policy statement for the service: scope; rules for access; data; change and incidents; reviewed quarterly,docs/06_grc_evidence_pack.md,
+5.2,Information security roles and responsibilities,Yes,Implemented,One operator holds every role (owner; administrator; incident handler; data controller); stated in the pack,docs/06_grc_evidence_pack.md,
+5.3,Segregation of duties,No,Not applicable,Single operator; no duties can be separated. Compensating control: every change passes automated tests in CI before it is deployed,.github/workflows/ci.yml,
+5.4,Management responsibilities,Yes,Implemented,The operator owns the pack and the residual risks and reviews both quarterly,docs/06_grc_evidence_pack.md,
+5.5,Contact with authorities,Yes,Implemented,Contacts documented for incident reporting: BSI/CERT-Bund; the Berlin data protection authority; Oracle abuse desk,docs/06_grc_evidence_pack.md,
+5.6,Contact with special interest groups,Yes,Planned,No community sharing yet,,Share honeypot indicators with a community feed such as AbuseIPDB
+5.7,Threat intelligence,Yes,Implemented,The honeypot itself produces threat intelligence: every event is mapped to a MITRE ATT&CK technique and published live,honeypot/collector/collector.py; docs/02_mitre_attack_mapping.md,
+5.8,Information security in project management,Yes,Implemented,Threat model and risk assessment written before deployment; security requirements tested,docs/01_threat_model.md; docs/03_iso27001_risk_assessment.md; risk_register.csv,
+5.9,Inventory of information and other associated assets,Yes,Implemented,Asset inventory with owner and classification for every asset,docs/06_grc_evidence_pack.md,
+5.10,Acceptable use of information and other associated assets,Yes,Implemented,Rules for honeypot data: research and public statistics only; no re-identification; no sharing of raw logs,docs/06_grc_evidence_pack.md,
+5.11,Return of assets,No,Not applicable,No employees or contractors hold assets of the service,,
+5.12,Classification of information,Yes,Implemented,Three classes (Public; Internal; Confidential) applied in the asset inventory,docs/06_grc_evidence_pack.md,
+5.13,Labelling of information,Yes,Partial,Classification follows storage location (public repo and pages are Public; VM raw logs and the SSH key are Confidential); no labels on individual files,docs/06_grc_evidence_pack.md,Accepted for a one-person service
+5.14,Information transfer,Yes,Implemented,All transfer is encrypted: HTTPS for the API and pages; SSH for administration; the API is read-only and cross-origin access is limited to the demo site,honeypot/Caddyfile; honeypot/setup-host.sh,
+5.15,Access control,Yes,Implemented,Administration only by SSH key on a separate port; the public API exposes only read-only; masked data; no write endpoints,honeypot/setup-host.sh; honeypot/collector/collector.py; grc/evidence/vm-2026-11-21.txt,
+5.16,Identity management,Yes,Implemented,One named admin account on the VM (key-based); root login disabled; one GitHub account owns the repositories,grc/evidence/vm-2026-11-21.txt,
+5.17,Authentication information,Yes,Partial,SSH passwords disabled; admin key is ed25519,grc/evidence/vm-2026-11-21.txt,The admin private key has no passphrase: add one
+5.18,Access rights,Yes,Implemented,Only the operator has access to the VM and repositories; access reviewed quarterly with the evidence snapshot,grc/evidence/vm-2026-11-21.txt,
+5.19,Information security in supplier relationships,Yes,Implemented,Supplier register with the risk each supplier brings and how it is handled,docs/06_grc_evidence_pack.md,
+5.20,Addressing information security within supplier agreements,Yes,Partial,Standard terms of Oracle Cloud and GitHub apply; both offer data processing agreements,docs/06_grc_evidence_pack.md,Record which DPA version applies to each account
+5.21,Managing information security in the ICT supply chain,Yes,Implemented,Honeypot software pinned to exact versions; datasets verified by SHA-256; Dependabot proposes updates for pip; Docker and Actions,honeypot/opencanary/Dockerfile; honeypot/collector/Dockerfile; data/download_cicids2017.sh; .github/dependabot.yml,
+5.22,"Monitoring, review and change management of supplier services",Yes,Implemented,An uptime check watches GitHub Pages and the VM every 30 minutes; a supplier change (LinkedIn flagging sslip.io) was handled as incident INC-07,.github/workflows/uptime.yml; docs/06_grc_evidence_pack.md,
+5.23,Information security for use of cloud services,Yes,Partial,Oracle Cloud Always Free VM in the EU (Frankfurt); provider controls inherited,docs/06_grc_evidence_pack.md,Upgrade to Pay As You Go so Oracle cannot reclaim the idle VM; set a 1 EUR budget alert
+5.24,Information security incident management planning and preparation,Yes,Implemented,Incident response playbook with severity levels; roles and contacts,docs/06_grc_evidence_pack.md,
+5.25,Assessment and decision on information security events,Yes,Implemented,Triage rules separate expected honeypot attacks (events) from incidents that affect the service,docs/06_grc_evidence_pack.md,
+5.26,Response to information security incidents,Yes,Implemented,Eight real incidents recorded with response; root cause and fix,docs/06_grc_evidence_pack.md,
+5.27,Learning from information security incidents,Yes,Implemented,Every incident ends with a lesson and where possible a regression test,docs/06_grc_evidence_pack.md; tests/test_honeypot.py,
+5.28,Collection of evidence,Yes,Implemented,Read-only evidence script collects the VM's security configuration; snapshots are committed,grc/collect_evidence.sh; grc/evidence/vm-2026-11-21.txt,
+5.29,Information security during disruption,Yes,Implemented,If the VM fails the demo pages and console keep working and the tracker shows Tracker offline; no security control depends on the VM being up,docs/06_grc_evidence_pack.md,
+5.30,ICT readiness for business continuity,Yes,Partial,The VM can be rebuilt from the repository with two commands; recovery time objective 1 hour,honeypot/setup-host.sh; honeypot/README.md,Run and time a rebuild drill once a year
+5.31,"Legal, statutory, regulatory and contractual requirements",Yes,Implemented,GDPR record of processing and legitimate-interest assessment; EU AI Act classification; NIS2 scope check,docs/06_grc_evidence_pack.md,
+5.32,Intellectual property rights,Yes,Implemented,Code under the MIT licence; datasets and the DB-IP database credited under their licences,LICENSE; README.md; honeypot/site/index.html,
+5.33,Protection of records,Yes,Implemented,Results; risk register and evidence snapshots are versioned in git,results/metrics_binary.csv; risk_register.csv; grc/evidence/vm-2026-11-21.txt,
+5.34,Privacy and protection of PII,Yes,Implemented,Addresses truncated and counted with a daily-keyed hash; passwords never stored by the tracker; tracker data kept 30 days; raw honeypot logs 7 days,honeypot/collector/collector.py; honeypot/opencanary/opencanary.conf; tests/test_honeypot.py,
+5.35,Independent review of information security,Yes,Planned,No independent review yet,,Ask a qualified peer to review the pack and the VM once a year
+5.36,"Compliance with policies, rules and standards for information security",Yes,Implemented,A test checks that every evidence file named in this SoA exists; the VM evidence is re-collected quarterly,tests/test_soa.py; grc/collect_evidence.sh,
+5.37,Documented operating procedures,Yes,Implemented,Deployment; rebuild and evidence collection are documented and scripted,honeypot/README.md; honeypot/setup-host.sh; grc/collect_evidence.sh,
+6.1,Screening,No,Not applicable,No staff are employed,,
+6.2,Terms and conditions of employment,No,Not applicable,No staff are employed,,
+6.3,"Information security awareness, education and training",Yes,Implemented,The operator holds an MSc in Cybersecurity and CompTIA Security+,README.md,
+6.4,Disciplinary process,No,Not applicable,No staff are employed,,
+6.5,Responsibilities after termination or change of employment,No,Not applicable,No staff are employed,,
+6.6,Confidentiality or non-disclosure agreements,No,Not applicable,No third party has access to confidential information of the service,,
+6.7,Remote working,Yes,Implemented,All administration is remote over key-based SSH from the operator's laptop (see 8.1),grc/evidence/vm-2026-11-21.txt,
+6.8,Information security event reporting,Yes,Implemented,The public reports vulnerabilities through GitHub private reporting; the uptime check emails the operator,SECURITY.md; .github/workflows/uptime.yml,
+7.1,Physical security perimeters,Yes,Inherited,VM in Oracle's Frankfurt data centre and pages on GitHub; physical security is the providers' (both ISO/IEC 27001 certified),docs/06_grc_evidence_pack.md,
+7.2,Physical entry,Yes,Inherited,Provider data centre controls,docs/06_grc_evidence_pack.md,
+7.3,"Securing offices, rooms and facilities",No,Not applicable,The service has no office,,
+7.4,Physical security monitoring,Yes,Inherited,Provider data centre controls,docs/06_grc_evidence_pack.md,
+7.5,Protecting against physical and environmental threats,Yes,Inherited,Provider data centre controls,docs/06_grc_evidence_pack.md,
+7.6,Working in secure areas,Yes,Inherited,Provider data centre controls,docs/06_grc_evidence_pack.md,
+7.7,Clear desk and clear screen,Yes,Planned,Applies to the operator's laptop,,Confirm automatic screen lock on the operator's laptop and record it
+7.8,Equipment siting and protection,Yes,Inherited,Provider data centre controls,docs/06_grc_evidence_pack.md,
+7.9,Security of assets off-premises,Yes,Planned,The operator's laptop holds the admin key,,Confirm disk encryption on the operator's laptop and record it
+7.10,Storage media,No,Not applicable,No removable media are used for the service,,
+7.11,Supporting utilities,Yes,Inherited,Provider data centre controls,docs/06_grc_evidence_pack.md,
+7.12,Cabling security,Yes,Inherited,Provider data centre controls,docs/06_grc_evidence_pack.md,
+7.13,Equipment maintenance,Yes,Inherited,Provider data centre controls,docs/06_grc_evidence_pack.md,
+7.14,Secure disposal or re-use of equipment,Yes,Inherited,Cloud storage is sanitised by the provider when released,docs/06_grc_evidence_pack.md,
+8.1,User endpoint devices,Yes,Planned,The operator's laptop is the only endpoint with admin access,,Confirm disk encryption; screen lock and automatic updates; add a passphrase to the SSH key
+8.2,Privileged access rights,Yes,Implemented,Root login disabled; sudo only for the key-authenticated admin; containers drop all Linux capabilities and add back only what each needs,grc/evidence/vm-2026-11-21.txt; honeypot/docker-compose.yml,
+8.3,Information access restriction,Yes,Implemented,The API returns only masked fields and never the address hash; raw logs are readable by root only,honeypot/collector/collector.py; tests/test_honeypot.py,
+8.4,Access to source code,Yes,Implemented,Public read access by design; only the operator can push; GitHub secret scanning and push protection are on,SECURITY.md,
+8.5,Secure authentication,Yes,Partial,SSH: key only; passwords and keyboard-interactive login disabled,grc/evidence/vm-2026-11-21.txt,Confirm two-factor authentication on the GitHub and Oracle accounts
+8.6,Capacity management,Yes,Implemented,Memory limits per container; swap on the 1 GB VM; limits on API batch size; page size and live viewers,honeypot/docker-compose.yml; honeypot/setup-host.sh; app/main.py; honeypot/collector/collector.py,
+8.7,Protection against malware,Yes,Partial,Low-interaction honeypot: attackers get no shell and uploads are never executed; containers are read-only,honeypot/docker-compose.yml; honeypot/opencanary/opencanary.conf,No malware scanner on the VM: accepted while no files are stored
+8.8,Management of technical vulnerabilities,Yes,Implemented,Automatic security updates on the VM; Dependabot alerts and updates; pinned container images,honeypot/setup-host.sh; .github/dependabot.yml; grc/evidence/vm-2026-11-21.txt,
+8.9,Configuration management,Yes,Implemented,All configuration is in git and deployed from it; container hardening is part of the configuration,honeypot/docker-compose.yml; honeypot/setup-host.sh; honeypot/Caddyfile,
+8.10,Information deletion,Yes,Implemented,Tracker events deleted after 30 days; raw honeypot logs rotated daily and kept 7 days,honeypot/collector/collector.py; honeypot/opencanary/opencanary.conf,
+8.11,Data masking,Yes,Implemented,IPv4 shown without the last octet; IPv6 as its /48; distinct sources counted with an HMAC whose key changes daily and is never stored,honeypot/collector/collector.py; tests/test_honeypot.py,
+8.12,Data leakage prevention,Yes,Partial,The API cannot return raw addresses; passwords or hashes; secret scanning blocks pushed credentials,honeypot/collector/collector.py; tests/test_honeypot.py,No leakage monitoring on the VM: accepted for its data
+8.13,Information backup,Yes,Partial,Code; configuration and evidence are in git on GitHub and on the operator's laptop,honeypot/README.md,Tracker data is not backed up: accepted (30-day statistics that refill within hours)
+8.14,Redundancy of information processing facilities,Yes,Partial,Demo pages and the console run on GitHub Pages independently of the VM,docs/06_grc_evidence_pack.md,Single honeypot VM: accepted for a demonstration service
+8.15,Logging,Yes,Implemented,Every honeypot event is logged and processed into the tracker; web server and collector log to the container runtime,honeypot/opencanary/opencanary.conf; honeypot/collector/collector.py,
+8.16,Monitoring activities,Yes,Implemented,Uptime check every 30 minutes alerts if pages fail or no attack has been logged for 3 hours,.github/workflows/uptime.yml,
+8.17,Clock synchronization,Yes,Implemented,VM clock synchronised by NTP; all events stored in UTC,grc/evidence/vm-2026-11-21.txt; honeypot/collector/collector.py,
+8.18,Use of privileged utility programs,Yes,Implemented,No admin utilities are exposed; containers run without a shell for attackers and with no extra privileges,honeypot/docker-compose.yml,
+8.19,Installation of software on operational systems,Yes,Implemented,Software reaches the VM only through apt and container images built from the repository,honeypot/setup-host.sh; honeypot/opencanary/Dockerfile; honeypot/collector/Dockerfile,
+8.20,Networks security,Yes,Implemented,Host firewall allows only the fake services; HTTPS and the admin port; everything else is rejected,honeypot/setup-host.sh; grc/evidence/vm-2026-11-21.txt; tests/test_honeypot.py,
+8.21,Security of network services,Yes,Implemented,HTTPS with HSTS; a strict content security policy; cross-origin access limited to the demo site,honeypot/Caddyfile; deploy/publish_demo.py,
+8.22,Segregation of networks,Yes,Partial,The collector API listens on localhost only and is reached through the web server; the admin port is separate,honeypot/Caddyfile; honeypot/docker-compose.yml,Containers share the host network so the honeypot sees real source addresses: accepted
+8.23,Web filtering,No,Not applicable,No users browse the web from the service,,
+8.24,Use of cryptography,Yes,Implemented,TLS certificates from Let's Encrypt; SSH ed25519 keys; HMAC-SHA256 with daily keys for counting sources,honeypot/Caddyfile; honeypot/collector/collector.py; grc/evidence/vm-2026-11-21.txt,
+8.25,Secure development life cycle,Yes,Implemented,Threat model first; tests and container smoke test on every push,docs/01_threat_model.md; .github/workflows/ci.yml; .github/workflows/container.yml,
+8.26,Application security requirements,Yes,Implemented,All attacker-supplied text is treated as hostile: cleaned; length-capped and escaped; API input validated,honeypot/collector/collector.py; honeypot/site/tracker.js; app/main.py,
+8.27,Secure system architecture and engineering principles,Yes,Implemented,Least privilege; read-only containers; collection separated from presentation; defence in depth (host firewall plus cloud security list),honeypot/README.md; honeypot/docker-compose.yml,
+8.28,Secure coding,Yes,Implemented,Parameterised SQL; output escaping; no inline script; tests for hostile input,honeypot/collector/collector.py; honeypot/site/tracker.js; tests/test_honeypot.py,
+8.29,Security testing in development and acceptance,Yes,Implemented,Hostile-input tests; container smoke test; ONNX parity test; adversarial evasion test of the model,tests/test_honeypot.py; tests/test_app.py; deploy/smoke_test.py; results/guardrails_evasion.csv,
+8.30,Outsourced development,No,Not applicable,No development is contracted out; third-party components are covered by 5.21,,
+8.31,"Separation of development, test and production environments",Yes,Partial,Development on the laptop; tests in CI; production on the VM,.github/workflows/ci.yml,No staging VM: changes go from CI to production
+8.32,Change management,Yes,Implemented,Every change is a git commit that passes CI before deployment; the evidence snapshot is re-collected after changes,.github/workflows/ci.yml; grc/collect_evidence.sh,
+8.33,Test information,Yes,Implemented,Tests use synthetic data and public datasets; no attacker data from the VM is used in tests,tests/test_honeypot.py,
+8.34,Protection of information systems during audit testing,Yes,Implemented,Evidence collection is read-only and prints no secrets or log contents,grc/collect_evidence.sh,
