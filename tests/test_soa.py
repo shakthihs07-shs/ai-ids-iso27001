@@ -38,5 +38,39 @@ def test_pack_summary_matches_the_soa():
 
 
 def test_excel_matches_the_csv():
-    xlsx = pd.read_excel(ROOT / "grc" / "soa.xlsx", sheet_name="Statement of Applicability", dtype=str).fillna("")
-    assert xlsx.equals(SOA), "grc/soa.xlsx is stale: run python src/build_soa.py"
+    xlsx = pd.read_excel(ROOT / "grc" / "soa.xlsx", sheet_name=None, dtype=str)
+    stale = "grc/soa.xlsx is stale: run python src/build_soa.py"
+    assert xlsx["Statement of Applicability"][SOA.columns].fillna("").equals(SOA), stale
+    risks = build_soa.load_risks().astype(str)
+    assert xlsx["Live risk register"].fillna("").equals(risks), stale
+
+
+# ---- live-service risk register (grc/risk_register_live.csv) ----
+RISKS = build_soa.load_risks()
+
+
+def test_live_risks_are_well_formed():
+    assert RISKS["Risk ID"].tolist() == [f"LR{i:02d}" for i in range(1, len(RISKS) + 1)]
+    for col in ("Likelihood", "Impact", "Residual likelihood", "Residual impact"):
+        assert RISKS[col].between(1, 5).all(), col
+    assert (RISKS["Residual score"] <= RISKS["Inherent score"]).all()
+
+
+@pytest.mark.parametrize("risk", RISKS.to_dict("records"), ids=RISKS["Risk ID"].tolist())
+def test_live_risk_is_treated_by_applicable_controls_and_decided(risk):
+    applicable = set(SOA.Control[SOA.Applicable == "Yes"])
+    named = build_soa.controls(risk["Annex A controls"])
+    assert named, f"{risk['Risk ID']} names no controls"
+    assert set(named) <= applicable, f"{risk['Risk ID']}: not applicable or unknown: {set(named) - applicable}"
+    above = risk["Residual score"] > build_soa.ACCEPTANCE
+    assert risk["Decision"] == ("Treat" if above else "Accept"), risk["Risk ID"]
+    if above:
+        assert risk["Open treatment"], f"{risk['Risk ID']} is above acceptance but has no open treatment"
+
+
+def test_risk_assessment_document_matches_the_register():
+    doc = (ROOT / "docs" / "08_live_service_risk_assessment.md").read_text(encoding="utf-8")
+    for r in RISKS.to_dict("records"):
+        row = (rf"\|\s*{r['Risk ID']}\s*\|[^\n]*\|\s*\**{r['Inherent score']} {r['Inherent rating']}\**\s*\|"
+               rf"[^\n]*\|\s*\**{r['Residual score']} {r['Residual rating']}\**\s*\|")
+        assert re.search(row, doc), f"docs/08 row for {r['Risk ID']} is out of date"

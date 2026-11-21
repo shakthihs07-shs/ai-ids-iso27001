@@ -102,7 +102,7 @@ ISMS cycle. Corrective actions are planned below; the one for A.8.16 is already 
 
 | Finding | Correction / corrective action | Due | Verification |
 |---|---|---|---|
-| NC-01 | Risk assessment of the live service (likelihood × impact, as in 03), with each SoA control linked to the risks it treats | 2026-12-31 | Next audit samples three risks and traces them to SoA controls |
+| NC-01 | **Done 2026-11-21:** risk assessment of the live service ([08](08_live_service_risk_assessment.md)), 12 risks, each linked to the SoA controls that treat it; the link is checked by a test | 2026-12-31 | Next audit samples three risks and traces them to SoA controls; effectiveness not yet verified |
 | NC-02 | **Done 2026-11-21:** schedule moved to minutes 7 and 37; SoA 8.16 set to Partial until runs are confirmed | 2026-11-28 | `audit_tests.sh` test A.8.16 passes; at least 10 scheduled runs in a week |
 | NC-03 | Define 4–6 measurable objectives (e.g. uptime, time to patch, time to close incidents, zero personal data published) | 2026-12-31 | Objectives documented with a measurement method |
 | NC-04 | Hold the first management review using the 9.3.2 inputs (audit results, incidents, objectives, risks, changes) | 2026-12-31 | Minutes with decisions and actions |
