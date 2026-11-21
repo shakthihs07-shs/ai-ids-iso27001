@@ -4,4 +4,4 @@ httpx>=0.27
 # in-browser console export (app/export_web.py); its tree workaround is written for skl2onnx 1.20
 skl2onnx==1.20.0
 onnx>=1.18
-onnxruntime>=1.20
+onnxruntime>=1.32.0
