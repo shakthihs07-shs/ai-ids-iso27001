@@ -21,6 +21,7 @@ It is a self-assessment for a one-person service, not a certification and not le
 | [9](#9-model-card-deployed-detector) | Model card of the deployed detector |
 | [10](#10-evidence-and-how-to-refresh-it) | Evidence and how to refresh it |
 | [07](07_internal_audit_2026-11.md) | **Internal audit, November 2026:** findings and corrective actions for this pack |
+| [08](08_live_service_risk_assessment.md) | **Risk assessment of the live service:** 12 risks, each traced to the SoA controls that treat it |
 
 ## 1. Scope
 
@@ -96,7 +97,8 @@ ISO/IEC 27001.
 ## 5. Statement of Applicability
 
 Full SoA with justification, evidence and gaps for every control: [`grc/soa.csv`](../grc/soa.csv) and
-[`grc/soa.xlsx`](../grc/soa.xlsx).
+[`grc/soa.xlsx`](../grc/soa.xlsx). The workbook also shows, for each control, which risks of the live service it
+treats ([08](08_live_service_risk_assessment.md)).
 
 | Theme | Implemented | Inherited | Partial | Planned | Not applicable | Total |
 |---|---|---|---|---|---|---|

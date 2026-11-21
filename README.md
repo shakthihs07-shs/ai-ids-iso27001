@@ -87,8 +87,10 @@ docs/
   06_grc_evidence_pack.md         The live service: policy, assets, suppliers, SoA summary, incident
                                   playbook and register, GDPR record, EU AI Act, model card
   07_internal_audit_2026-11.md    First internal audit: clauses 4-10, tested Annex A sample, findings, corrective actions
+  08_live_service_risk_assessment.md  12 risks of the live service, scored, decided and traced to SoA controls
 risk_register.xlsx / .csv         14 risks with evidence, owners, Annex A controls, residual risk
-grc/                              soa.csv / soa.xlsx (93 Annex A controls), collect_evidence.sh (read-only
+grc/                              soa.csv / soa.xlsx (93 Annex A controls), risk_register_live.csv (12 risks
+                                  of the live service, linked to SoA controls), collect_evidence.sh (read-only
                                   VM evidence), audit_tests.sh (25 internal audit tests run from outside),
                                   check_endpoint.ps1 (admin laptop check), evidence/ (dated snapshots)
 honeypot/                         The live honeypot, collector, tracker page and VM setup
