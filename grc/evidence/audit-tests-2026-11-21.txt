@@ -1,0 +1,28 @@
+# Internal audit tests, 2026-11-21 17:59:37 UTC
+PASS [A.8.20] port 22 reachable (expected)
+PASS [A.8.20] port 80 reachable (expected)
+PASS [A.8.20] port 443 reachable (expected)
+PASS [A.8.20] port 22022 reachable (expected)
+PASS [A.8.20] port 111 not reachable (collector API, Docker API, others)
+PASS [A.8.20] port 2375 not reachable (collector API, Docker API, others)
+PASS [A.8.20] port 3000 not reachable (collector API, Docker API, others)
+PASS [A.8.20] port 5432 not reachable (collector API, Docker API, others)
+PASS [A.8.20] port 8000 not reachable (collector API, Docker API, others)
+PASS [A.8.20] port 9000 not reachable (collector API, Docker API, others)
+PASS [A.8.5] admin SSH offers public-key login only (Permission denied (publickey))
+PASS [A.8.2] root gets no password login over SSH (Permission denied (publickey))
+PASS [A.8.24] certificate valid and trusted, more than 14 days left (notAfter=Feb 18 13:58:54 2027 GMT
+Certificate will not expire)
+PASS [A.8.24] TLS 1.0 and 1.1 refused
+PASS [A.8.21] HSTS and CSP sent by the tracker server
+PASS [A.8.21] API grants cross-origin access to the demo site
+PASS [A.8.21] API does not grant cross-origin access to other sites
+PASS [A.8.21] public tracker page carries its own CSP
+PASS [A.8.11] 200 latest public events: addresses truncated, no hash or password fields (200 events, 0 violations)
+PASS [A.8.10] tracker retention set to 30 days and no event older (retention 30 days, oldest event 1 days)
+PASS [A.8.15] honeypot logged an attack in the last hour (1852 events in the last hour)
+FAIL [A.8.16] uptime check ran on its schedule in the last 2 hours and passed (no scheduled run ever)
+PASS [A.8.32] main requires a pull request and the CI test check (['deletion', 'non_fast_forward', 'pull_request', 'required_status_checks'])
+PASS [A.8.32] last 3 changes on main are merged pull requests whose test check passed (f29c3ca merged PR, test passed; 3adac4d merged PR, test passed; b2c6014 merged PR, test passed; )
+PASS [A.6.8] security policy published
+# 1 failed

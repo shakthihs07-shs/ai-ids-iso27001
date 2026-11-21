@@ -20,6 +20,7 @@ It is a self-assessment for a one-person service, not a certification and not le
 | [8](#8-eu-ai-act-and-nis2) | EU AI Act classification and NIS2 scope |
 | [9](#9-model-card-deployed-detector) | Model card of the deployed detector |
 | [10](#10-evidence-and-how-to-refresh-it) | Evidence and how to refresh it |
+| [07](07_internal_audit_2026-11.md) | **Internal audit, November 2026:** findings and corrective actions for this pack |
 
 ## 1. Scope
 
@@ -102,8 +103,11 @@ Full SoA with justification, evidence and gaps for every control: [`grc/soa.csv`
 | 5 Organizational | 29 | 0 | 4 | 2 | 2 | 37 |
 | 6 People | 3 | 0 | 0 | 0 | 5 | 8 |
 | 7 Physical | 1 | 10 | 0 | 1 | 2 | 14 |
-| 8 Technological | 24 | 0 | 8 | 0 | 2 | 34 |
-| **All** | **57** | **10** | **12** | **3** | **11** | **93** |
+| 8 Technological | 23 | 0 | 9 | 0 | 2 | 34 |
+| **All** | **56** | **10** | **13** | **3** | **11** | **93** |
+
+The first internal audit ([07](07_internal_audit_2026-11.md)) raised one major and four minor nonconformities;
+their corrective actions are tracked there.
 
 **Treatment plan: open gaps**
 
@@ -244,6 +248,7 @@ handling, supply-chain security, vulnerability handling, cryptography and access
 | [`grc/evidence/github-ruleset-protect-main.json`](../grc/evidence/github-ruleset-protect-main.json) | `main` cannot be deleted or force-pushed; changes need a pull request that passes the CI `test` check |
 | [`grc/evidence/github-repo-security-2026-11-21.json`](../grc/evidence/github-repo-security-2026-11-21.json) | Secret scanning, push protection, Dependabot alerts and security updates, private vulnerability reporting: all on |
 | [`.github/workflows/container.yml`](../.github/workflows/container.yml) | Every update is built and smoke-tested before it merges, the honeypot images included |
+| [`grc/audit_tests.sh`](../grc/audit_tests.sh), [`grc/evidence/audit-tests-2026-11-21.txt`](../grc/evidence/audit-tests-2026-11-21.txt) | 25 audit tests re-performing sampled controls from outside the system, and their results |
 
 **Refresh (quarterly and after changes):** copy `grc/collect_evidence.sh` to the VM, run
 `sudo bash collect_evidence.sh > vm-$(date -u +%F).txt`, commit the output under `grc/evidence/`, and point

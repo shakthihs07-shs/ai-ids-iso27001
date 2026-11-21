@@ -2,7 +2,8 @@
 # GitHub pauses scheduled workflows after 60 days without commits to the repository: re-enable it under Actions.
 name: Uptime
 on:
-  schedule: [{cron: "*/30 * * * *"}]
+  # Off the busy :00/:30 minutes: GitHub delays or drops scheduled runs under load (internal audit NC-02)
+  schedule: [{cron: "7,37 * * * *"}]
   workflow_dispatch:
 permissions: {}
 jobs:
