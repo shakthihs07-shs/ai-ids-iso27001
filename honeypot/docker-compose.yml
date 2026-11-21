@@ -40,8 +40,38 @@ services:
     tmpfs: [/tmp]
     mem_limit: 256m
 
+  # Shadow mode (docs/09): record traffic to the fake services, then hourly turn it into flows and score them with
+  # the detector. The detector decides nothing here; run-hourly.sh deletes captures and flows after scoring.
+  capture:
+    build: {context: ./shadow, dockerfile: capture.Dockerfile}
+    network_mode: host
+    environment: ["IFACE=${CAPTURE_IFACE:-}"]  # empty: the internet-facing interface; CI uses lo
+    restart: unless-stopped
+    cap_drop: [ALL]
+    cap_add: [NET_RAW, NET_ADMIN, SETUID, SETGID]   # open the interface, then drop to the tcpdump user
+    security_opt: ["no-new-privileges:true"]
+    read_only: true
+    volumes: ["shadow-pcap:/pcap"]
+    mem_limit: 64m
+
+  cicflowmeter:   # built here, run by run-hourly.sh
+    build: {context: ./shadow, dockerfile: cicflowmeter.Dockerfile}
+    image: honeypot-cicflowmeter
+    profiles: [jobs]
+
+  shadow:
+    build: {context: .., dockerfile: honeypot/shadow/scorer.Dockerfile}
+    profiles: [jobs]
+    network_mode: none
+    volumes: ["tracker-data:/data"]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    read_only: true
+    mem_limit: 384m
+
 volumes:
   canary-logs: {}
   tracker-data: {}
   caddy-data: {}
   caddy-config: {}
+  shadow-pcap: {}

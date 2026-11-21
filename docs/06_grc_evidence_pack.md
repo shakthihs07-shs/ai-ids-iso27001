@@ -21,7 +21,8 @@ It is a self-assessment for a one-person service, not a certification and not le
 | [9](#9-model-card-deployed-detector) | Model card of the deployed detector |
 | [10](#10-evidence-and-how-to-refresh-it) | Evidence and how to refresh it |
 | [07](07_internal_audit_2026-11.md) | **Internal audit, November 2026:** findings and corrective actions for this pack |
-| [08](08_live_service_risk_assessment.md) | **Risk assessment of the live service:** 12 risks, each traced to the SoA controls that treat it |
+| [08](08_live_service_risk_assessment.md) | **Risk assessment of the live service:** 13 risks, each traced to the SoA controls that treat it |
+| [09](09_shadow_mode.md) | **Shadow mode:** the detector scores real honeypot traffic; design, privacy, limits and results |
 
 ## 1. Scope
 
@@ -184,10 +185,10 @@ honeypot processes personal data.
 | Purpose | Information security research and public threat statistics |
 | Legal basis | Art. 6(1)(f), legitimate interests: network and information security (Recital 49) and research |
 | Data subjects | Operators of systems that connect to the honeypot without being invited |
-| Data | Source IP address and port, time, target service; usernames, web paths, commands and user agents the source sends; attempted passwords (raw log only) |
+| Data | Source IP address and port, time, target service; usernames, web paths, commands and user agents the source sends; attempted passwords (raw log only); full packets of connections to the fake services (shadow mode, [09](09_shadow_mode.md)), turned into flows and deleted within the hour |
 | Recipients | The public sees masked data only. Oracle hosts the VM (processor). GitHub serves static pages and receives no personal data from the service |
 | Transfers outside the EU | None by the service: the VM is in Frankfurt. Masked data is public by design |
-| Retention | Raw log: 7 days. Tracker database: 30 days. The daily hashing key is never stored |
+| Retention | Packet captures and flow files: deleted right after hourly scoring, never kept past 2 hours. Raw log: 7 days. Tracker database and shadow results (no addresses): 30 days. The daily hashing key is never stored |
 | Security measures | The Statement of Applicability, in particular 5.34, 8.10, 8.11, 8.20, 8.24 |
 
 **Legitimate-interest assessment (three-part test)**

@@ -38,12 +38,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     defaults: {run: {working-directory: honeypot}}
-    env: {TRACKER_HOST: ci.invalid}  # Caddy is not started here; compose needs the variable to parse
+    # Caddy is not started here; compose needs the variable to parse. Test traffic stays on the loopback interface.
+    env: {TRACKER_HOST: ci.invalid, CAPTURE_IFACE: lo}
     steps:
       - uses: actions/checkout@v7
       - name: Free port 22 for the fake SSH (the runner runs its own sshd there)
         run: sudo systemctl stop ssh.socket ssh || true
-      - run: docker compose up -d --build opencanary collector
+      - run: docker compose up -d --build opencanary collector capture
       - name: Fake services answer and their events reach the collector
         run: |
           for i in $(seq 1 30); do curl -sf localhost:8000/api/health && break; sleep 2; done
@@ -59,6 +60,18 @@ jobs:
           log = open('/var/log/opencanary/opencanary.log').read()
           assert '\"PATH\": \"/.env\"' in log, 'probed path not logged'
           print('web requests logged and readable by the collector')"
+      - name: Shadow mode end to end (capture, fixed CICFlowMeter, scoring, API)
+        run: |
+          for p in 21 23 3306 6379; do timeout 5 bash -c "exec 3<>/dev/tcp/127.0.0.1/$p; echo hello >&3; sleep 1" || true; done
+          sleep 3
+          docker compose stop capture                       # flush the capture file
+          docker compose --profile jobs build
+          sudo env TRACKER_HOST="$TRACKER_HOST" ALL=1 sh shadow/run-hourly.sh   # sudo drops the job's environment
+          curl -sf 'localhost:8000/api/shadow?hours=24' | python3 -c "
+          import json, sys
+          s = json.load(sys.stdin); print(json.dumps(s, indent=1))
+          assert s['flows'] > 0, 'no honeypot flow was scored'"
+          sudo sh -c 'ls /var/lib/docker/volumes/honeypot_shadow-pcap/_data/*.pcap 2>/dev/null' && exit 1 || echo "captures deleted after scoring"
       - name: Honeypot logs
         if: always()
         run: docker compose logs --tail 40

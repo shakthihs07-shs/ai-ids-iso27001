@@ -163,7 +163,10 @@ def parse_event(line: str, geo: Geo, hasher: DailyHasher) -> dict | None:
 SCHEMA = """CREATE TABLE IF NOT EXISTS events (id INTEGER PRIMARY KEY, ts TEXT NOT NULL, service TEXT, port INTEGER,
             action TEXT, technique TEXT, country TEXT, src TEXT, src_hash TEXT, detail TEXT);
             CREATE INDEX IF NOT EXISTS events_ts ON events(ts);
-            CREATE TABLE IF NOT EXISTS cursor (id INTEGER PRIMARY KEY CHECK (id = 1), inode INTEGER, pos INTEGER);"""
+            CREATE TABLE IF NOT EXISTS cursor (id INTEGER PRIMARY KEY CHECK (id = 1), inode INTEGER, pos INTEGER);
+            CREATE TABLE IF NOT EXISTS shadow (id INTEGER PRIMARY KEY, ts TEXT NOT NULL, service TEXT, port INTEGER,
+            packets INTEGER, duration_s REAL, supervised REAL, anomaly INTEGER, decision TEXT);
+            CREATE INDEX IF NOT EXISTS shadow_ts ON shadow(ts);"""  # shadow: written hourly by shadow/score.py
 COLUMNS = ("ts", "service", "port", "action", "technique", "country", "src", "src_hash", "detail")
 
 
@@ -192,6 +195,7 @@ def save(con: sqlite3.Connection, rec: dict | None, cursor: dict):
 def purge(con: sqlite3.Connection, days: int = RETENTION_DAYS):
     cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).strftime("%Y-%m-%dT%H:%M:%SZ")
     con.execute("DELETE FROM events WHERE ts < ?", (cutoff,))
+    con.execute("DELETE FROM shadow WHERE ts < ?", (cutoff,))
 
 
 def public(row: sqlite3.Row) -> dict:
@@ -217,6 +221,22 @@ def stats(con: sqlite3.Connection, hours: int) -> dict:
                         q("SELECT substr(ts, 1, 13) h, COUNT(*) FROM events WHERE ts >= ? GROUP BY 1 ORDER BY 1")],
             "usernames": detail("username", 12), "paths": detail("path", 12),
             "first_event": first[0], "last_event": first[1], "retention_days": RETENTION_DAYS}
+
+
+def shadow_stats(con: sqlite3.Connection, hours: int) -> dict:
+    """What the detector would have decided about the real attacks it saw in shadow mode (it decides nothing)."""
+    since = (datetime.now(timezone.utc) - timedelta(hours=hours)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    rows = con.execute("SELECT service, decision, COUNT(*) FROM shadow WHERE ts >= ? GROUP BY 1, 2", (since,)).fetchall()
+    by_service: dict[str, dict] = {}
+    for service, decision, n in rows:
+        by_service.setdefault(service, {"ALERT": 0, "REVIEW": 0, "ALLOW": 0})[decision] = n
+    total = {d: sum(s[d] for s in by_service.values()) for d in ("ALERT", "REVIEW", "ALLOW")}
+    flows = sum(total.values())
+    return {"hours": hours, "flows": flows, "decisions": total,
+            "flagged_share": (total["ALERT"] + total["REVIEW"]) / flows if flows else None,
+            "by_service": sorted(({"key": k, **v, "flows": sum(v.values())} for k, v in by_service.items()),
+                                 key=lambda s: -s["flows"]),
+            "last_scored": con.execute("SELECT MAX(ts) FROM shadow").fetchone()[0]}
 
 
 # ---------------------------------------------------------------- log follower
@@ -289,6 +309,10 @@ def create_app(con: sqlite3.Connection | None = None, ingest: bool = True):
     @app.get("/api/stats")
     def get_stats(hours: int = Query(24, ge=1, le=24 * RETENTION_DAYS)):
         return stats(con, hours)
+
+    @app.get("/api/shadow")
+    def get_shadow(hours: int = Query(24, ge=1, le=24 * RETENTION_DAYS)):
+        return shadow_stats(con, hours)
 
     @app.get("/api/stream")
     async def stream():
