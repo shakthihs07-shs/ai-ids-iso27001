@@ -1,12 +1,16 @@
-# ISO/IEC 27001 A.8.8: proposes updates for outdated or vulnerable dependencies as pull requests
+# ISO/IEC 27001 A.8.8: proposes updates for outdated or vulnerable dependencies as pull requests.
+# Grouped so each ecosystem arrives as one pull request a month, tested by CI and the container workflow.
 version: 2
 updates:
   - package-ecosystem: pip
     directory: /
     schedule: {interval: monthly}
+    groups: {python-packages: {patterns: ["*"]}}
   - package-ecosystem: docker
     directories: [/, /honeypot/collector, /honeypot/opencanary]
     schedule: {interval: monthly}
+    groups: {base-images: {patterns: ["*"]}}
   - package-ecosystem: github-actions
     directory: /
     schedule: {interval: monthly}
+    groups: {actions: {patterns: ["*"]}}
