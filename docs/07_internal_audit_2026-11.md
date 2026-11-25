@@ -103,7 +103,7 @@ ISMS cycle. Corrective actions are planned below; the one for A.8.16 is already 
 | Finding | Correction / corrective action | Due | Verification |
 |---|---|---|---|
 | NC-01 | **Done 2026-11-21:** risk assessment of the live service ([08](08_live_service_risk_assessment.md)), 12 risks, each linked to the SoA controls that treat it; the link is checked by a test | 2026-12-31 | Next audit samples three risks and traces them to SoA controls; effectiveness not yet verified |
-| NC-02 | **Done 2026-11-21:** schedule moved to minutes 7 and 37; SoA 8.16 set to Partial until runs are confirmed | 2026-11-28 | `audit_tests.sh` test A.8.16 passes; at least 10 scheduled runs in a week |
+| NC-02 | **Closed 2026-11-25.** Correction 2026-11-21: schedule moved to minutes 7 and 37. Root cause confirmed: the workflow now runs, but GitHub runs scheduled workflows only 2–4 times a day, so it cannot be the primary monitor. Corrective action: external monitor every 5 minutes on the four public URLs with e-mail alerts ([evidence](../grc/evidence/uptime-monitors-2026-11-25.txt)); a new `/api/health?fresh=` check fails when no attack has been logged for 3 hours; SoA 8.16 back to Implemented | 2026-11-28 | **Verified 2026-11-25:** test A.8.16 passes ([results](../grc/evidence/audit-tests-2026-11-25.txt)); all four monitors up |
 | NC-03 | Define 4–6 measurable objectives (e.g. uptime, time to patch, time to close incidents, zero personal data published) | 2026-12-31 | Objectives documented with a measurement method |
 | NC-04 | Hold the first management review using the 9.3.2 inputs (audit results, incidents, objectives, risks, changes) | 2026-12-31 | Minutes with decisions and actions |
 | NC-05 | Document interested parties (visitors and recruiters, people whose addresses are processed, providers, the data protection authority) and their requirements | 2026-12-31 | Register in 06 |
@@ -112,7 +112,7 @@ ISMS cycle. Corrective actions are planned below; the one for A.8.16 is already 
 
 | When | What |
 |---|---|
-| 2026-11-28 | Follow-up of NC-02: re-run `audit_tests.sh` |
+| 2026-11-25 | Follow-up of NC-02: done, closed (see section 5) |
 | Quarterly from 2027-02 | Full re-run of `audit_tests.sh`, VM evidence refresh, follow-up of open corrective actions |
 | Yearly | Clause 4–10 review, rotating Annex A sample, independent peer review (A.5.35) |
 

@@ -1,0 +1,17 @@
+External uptime monitoring (closes internal audit NC-02), recorded 2026-11-25 from the UptimeRobot dashboard
+
+Provider: UptimeRobot, free plan (outside GitHub, so it keeps running when GitHub delays or drops scheduled workflows)
+Interval: every 5 minutes, HTTP(S) checks
+Alerts: e-mail to the operator when a monitor goes down and when it recovers
+
+Monitor                                                       What a failure means
+https://152-70-6-78.sslip.io/api/health?fresh=10800           Collector down, or no attack logged for 3 hours (returns 503)
+https://shakthihs07-shs.github.io/ids-demo/                   Results dashboard unavailable
+https://shakthihs07-shs.github.io/ids-demo/live/              In-browser live console unavailable
+https://shakthihs07-shs.github.io/ids-demo/tracker/           Public tracker page unavailable
+
+Status at recording: 4 of 4 up, 0 incidents in the last 24 hours.
+
+The GitHub uptime workflow (.github/workflows/uptime.yml) stays as a second, slower check: GitHub ran it
+2-4 times a day between 2026-11-21 and 2026-11-25 instead of every 30 minutes, which is why the primary check
+moved to an external monitor.

@@ -88,6 +88,7 @@ re-identify sources, and raw logs are never shared.
 | Oracle Cloud | The VM, network, data centre | Idle Always Free VMs can be reclaimed; account in Free Trial | Uptime check alerts; gap: upgrade to Pay As You Go (A.5.23) |
 | GitHub | Code hosting, CI, Pages, secret scanning | Account takeover would expose the demo | Two-factor authentication with an authenticator app (A.8.5) |
 | Let's Encrypt | TLS certificate | Renewal failure breaks the API | Caddy renews automatically; certificate dates in the evidence snapshot |
+| UptimeRobot | External uptime monitoring every 5 minutes (A.8.16) | Sees only public URLs; free plan could change | No credentials or data shared; the GitHub uptime workflow remains as a fallback |
 | sslip.io | DNS name for the VM | LinkedIn flags the whole domain as possibly malicious (INC-07) | Public links point to GitHub Pages only; a custom domain is planned |
 | DB-IP | IP-to-country database (CC BY 4.0) | Download blocked (INC-01) | Fetched at build time with a fallback month; credited on the page |
 | PyPI, Docker Hub, GitHub Actions | Dependencies | Vulnerable or compromised packages | Pinned honeypot versions, Dependabot alerts and updates |
@@ -106,8 +107,8 @@ treats ([08](08_live_service_risk_assessment.md)).
 | 5 Organizational | 29 | 0 | 4 | 2 | 2 | 37 |
 | 6 People | 3 | 0 | 0 | 0 | 5 | 8 |
 | 7 Physical | 1 | 10 | 0 | 1 | 2 | 14 |
-| 8 Technological | 23 | 0 | 9 | 0 | 2 | 34 |
-| **All** | **56** | **10** | **13** | **3** | **11** | **93** |
+| 8 Technological | 24 | 0 | 8 | 0 | 2 | 34 |
+| **All** | **57** | **10** | **12** | **3** | **11** | **93** |
 
 The first internal audit ([07](07_internal_audit_2026-11.md)) raised one major and four minor nonconformities;
 their corrective actions are tracked there.
@@ -246,7 +247,7 @@ handling, supply-chain security, vulnerability handling, cryptography and access
 | [`grc/evidence/vm-2026-11-21.txt`](../grc/evidence/vm-2026-11-21.txt) | Firewall rules, SSH settings, container hardening, time sync, TLS certificate, log retention, as found on the VM |
 | [`grc/soa.csv`](../grc/soa.csv) | Status, justification and evidence for every Annex A control |
 | [`tests/test_soa.py`](../tests/test_soa.py) | Every evidence file named in the SoA exists; the summary above matches the SoA |
-| [`.github/workflows/uptime.yml`](../.github/workflows/uptime.yml) | Monitoring every 30 minutes, with e-mail on failure |
+| [`.github/workflows/uptime.yml`](../.github/workflows/uptime.yml) | Second uptime check (GitHub runs it a few times a day); the primary is an external 5-minute monitor ([evidence](../grc/evidence/uptime-monitors-2026-11-25.txt)) |
 | [`tests/test_honeypot.py`](../tests/test_honeypot.py) | Privacy, hostile input, retention and firewall rules are tested on every push |
 | [`grc/evidence/github-ruleset-protect-main.json`](../grc/evidence/github-ruleset-protect-main.json) | `main` cannot be deleted or force-pushed; changes need a pull request that passes the CI `test` check |
 | [`grc/evidence/github-repo-security-2026-11-21.json`](../grc/evidence/github-repo-security-2026-11-21.json) | Secret scanning, push protection, Dependabot alerts and security updates, private vulnerability reporting: all on |
