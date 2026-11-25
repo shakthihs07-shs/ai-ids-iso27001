@@ -53,15 +53,16 @@ import json, sys, datetime as d
 s = json.load(sys.stdin); age = (d.datetime.now(d.timezone.utc) - d.datetime.fromisoformat(s['first_event'].replace('Z', '+00:00'))).days
 print('retention', s['retention_days'], 'days, oldest event', age, 'days'); sys.exit(0 if s['retention_days'] == 30 and age <= 31 else 1)\""
 
-# A.8.15 / A.8.16 logging and monitoring: events still flowing; the uptime check runs on its schedule
+# A.8.15 / A.8.16 logging and monitoring: events still flowing; the externally monitored health check passes; the GitHub backup check still runs
 check A.8.15 "honeypot logged an attack in the last hour" bash -c "curl -sf '$API/api/stats?hours=1' | $(printf %q "$PY") -c \"
 import json, sys; s = json.load(sys.stdin); print(s['events'], 'events in the last hour'); sys.exit(0 if s['events'] else 1)\""
-check A.8.16 "uptime check ran on its schedule in the last 2 hours and passed" bash -c "curl -sf '$REPO/actions/workflows/uptime.yml/runs?event=schedule&per_page=1' | $(printf %q "$PY") -c \"
+check A.8.16 "health check the external monitor polls passes (attack logged in the last 3 hours)" curl -sf "$API/api/health?fresh=10800"
+check A.8.16 "GitHub backup uptime check ran on its schedule in the last 24 hours and passed" bash -c "curl -sf '$REPO/actions/workflows/uptime.yml/runs?event=schedule&per_page=1' | $(printf %q "$PY") -c \"
 import json, sys, datetime as d
 runs = json.load(sys.stdin)['workflow_runs']
 if not runs: print('no scheduled run ever'); sys.exit(1)
-r = runs[0]; age = (d.datetime.now(d.timezone.utc) - d.datetime.fromisoformat(r['created_at'].replace('Z', '+00:00'))).total_seconds() / 60
-print(f'last scheduled run {age:.0f} min ago, {r[\\\"conclusion\\\"]}'); sys.exit(0 if age <= 120 and r['conclusion'] == 'success' else 1)\""
+r = runs[0]; age = (d.datetime.now(d.timezone.utc) - d.datetime.fromisoformat(r['created_at'].replace('Z', '+00:00'))).total_seconds() / 3600
+print(f'last scheduled run {age:.1f} h ago, {r[\\\"conclusion\\\"]}'); sys.exit(0 if age <= 24 and r['conclusion'] == 'success' else 1)\""
 
 # A.8.32 change management: main is protected and recent changes arrived through pull requests with passing CI
 check A.8.32 "main requires a pull request and the CI test check" bash -c "curl -sf $REPO/rules/branches/main | $(printf %q "$PY") -c \"
