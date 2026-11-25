@@ -207,3 +207,15 @@ def test_shadow_api_summarises_decisions(tmp_path):
     s = TestClient(c.create_app(con, ingest=False)).get("/api/shadow").json()
     assert s["flows"] == 4 and s["decisions"] == {"ALERT": 1, "REVIEW": 1, "ALLOW": 2} and s["flagged_share"] == 0.5
     assert s["by_service"][0] == {"key": "SSH", "ALERT": 1, "REVIEW": 1, "ALLOW": 1, "flows": 3}
+
+
+def test_health_freshness_lets_an_uptime_monitor_notice_a_stalled_honeypot(tmp_path):
+    con = c.connect(tmp_path / "t.db")
+    client = TestClient(c.create_app(con, ingest=False))
+    assert client.get("/api/health").status_code == 200                       # plain liveness, even with no events
+    assert client.get("/api/health?fresh=3600").json()["status"] == "stale"   # nothing logged yet
+    old = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time() - 7200))
+    con.execute("INSERT INTO events (ts, service) VALUES (?, 'SSH')", (old,))
+    assert client.get("/api/health?fresh=3600").status_code == 503             # last attack 2 h ago
+    assert client.get("/api/health?fresh=10800").status_code == 200            # within 3 h
+    assert client.get("/api/health?fresh=5").status_code == 422                # nonsense windows are refused

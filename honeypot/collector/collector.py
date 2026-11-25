@@ -1,6 +1,6 @@
 """Honeypot collector: turns OpenCanary events into privacy-safe, ATT&CK-mapped records and serves them.
 
-  GET /api/health      liveness and the time of the last event
+  GET /api/health      liveness and the time of the last event; ?fresh=N answers 503 if none in N seconds
   GET /api/events      latest events, newest first (?limit=, ?before_id=)
   GET /api/stats       counts for the last ?hours= (default 24): services, techniques, countries, hours,
                        usernames tried, web paths probed, distinct sources
@@ -296,8 +296,15 @@ def create_app(con: sqlite3.Connection | None = None, ingest: bool = True):
     app = FastAPI(title="Honeypot attack tracker", lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
 
     @app.get("/api/health")
-    def health():
-        return {"status": "ok", "last_event": con.execute("SELECT MAX(ts) FROM events").fetchone()[0]}
+    def health(fresh: int | None = Query(None, ge=60, le=86400)):
+        """?fresh=N: answer 503 unless an attack was logged in the last N seconds, so an external uptime monitor
+        notices a honeypot that still answers but has stopped logging."""
+        from fastapi.responses import JSONResponse
+        last = con.execute("SELECT MAX(ts) FROM events").fetchone()[0]
+        age = (datetime.now(timezone.utc) - datetime.fromisoformat(last.replace("Z", "+00:00"))).total_seconds() if last else None
+        stale = fresh is not None and (age is None or age > fresh)
+        body = {"status": "stale" if stale else "ok", "last_event": last, "age_seconds": None if age is None else int(age)}
+        return JSONResponse(body, status_code=503 if stale else 200)
 
     @app.get("/api/events")
     def events(limit: int = Query(50, ge=1, le=200), before_id: int | None = Query(None, ge=1)):
